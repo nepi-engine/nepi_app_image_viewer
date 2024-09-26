@@ -15,9 +15,8 @@ project(nepi_app_image_viewer)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-sensor_msgs
+message_generation
 std_msgs
-nepi_ros_interfaces
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,11 +53,9 @@ nepi_ros_interfaces
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(FILES
+	ImageSelection.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -75,10 +72,10 @@ nepi_ros_interfaces
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -110,9 +107,8 @@ nepi_ros_interfaces
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES pointcloud_app
-   CATKIN_DEPENDS sensor_msgs nepi_ros_interfaces
+   CATKIN_DEPENDS 
+   message_runtime
 #  DEPENDS CATKIN_DEPENDS sensor_msgs nepi_ros_interfaces nepi_edge_sdk_base 
 )
 
@@ -198,6 +194,26 @@ include_directories(
 install(DIRECTORY etc/
   DESTINATION ${CATKIN_GLOBAL_ETC_DESTINATION}
   USE_SOURCE_PERMISSIONS
+)
+
+## Mark other files for installation (e.g. launch and bag files, etc.)
+set( NEPI_APP_LAUNCH_FOLDER 
+  # Must hard-coded 
+  /opt/nepi/ros/share/nepi_apps
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${NEPI_APP_LAUNCH_FOLDER}
+)
+
+## Mark other files for installation (e.g. launch and bag files, etc.)
+set( NEPI_RUI_FOLDER 
+  # Must hard-coded 
+  /opt/nepi/nepi_rui/src/rui_webserver/rui-app/src
+)
+
+install(DIRECTORY rui/
+  DESTINATION ${NEPI_RUI_FOLDER}
 )
 
 #############
