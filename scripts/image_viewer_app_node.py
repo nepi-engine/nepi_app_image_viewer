@@ -30,6 +30,7 @@ from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
 
 from nepi_edge_sdk_base import nepi_ros
+from nepi_edge_sdk_base import nepi_msg
 
 from nepi_edge_sdk_base.save_data_if import SaveDataIF
 from nepi_edge_sdk_base.save_cfg_if import SaveCfgIF
@@ -56,36 +57,19 @@ class NepiImageViewerApp(object):
 
   data_products = ["image_0","image_1","image_2","image_3"]
   img_subs_dict = dict()
-  ###################
-  ## App Callbacks
-
-  def resetAppCb(self,msg):
-    self.resetApp()
-
-  def resetApp(self):
-    rospy.set_param('~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
-    self.publish_status()
-
-  def setImageTopicCb(self,msg):
-    #rospy.loginfo(msg)
-    img_index = msg.image_index
-    img_topic = msg.image_topic
-    found_topic = nepi_ros.find_topic(img_topic)
-    if img_index > -1 and img_index < 4 and found_topic != "":
-      current_sel = rospy.get_param('~iv_app/selected_topics', self.init_selected_topics)
-      current_sel[img_index] = found_topic
-    rospy.set_param('~iv_app/selected_topics', current_sel)
-    self.publish_status()
 
 
   #######################
   ### Node Initialization
+  DEFAULT_NODE_NAME = "image_viewer_app" # Can be overwitten by luanch command
   def __init__(self):
-    node_name = "image_viewer_app"
-    rospy.init_node(name=node_name)
-
-
-    rospy.loginfo("IMGVIEW_APP: : Starting Initialization Processes")
+    #### APP NODE INIT SETUP ####
+    nepi_ros.init_node(name= self.DEFAULT_NODE_NAME)
+    self.node_name = nepi_ros.get_node_name()
+    self.base_namespace = nepi_ros.get_base_namespace()
+    nepi_msg.createMsgPublishers(self)
+    nepi_msg.publishMsgInfo(self,"Starting Initialization Processes")
+    ##############################
     self.initParamServerValues(do_updates = False)
     self.resetParamServer(do_updates = False)
    
@@ -114,14 +98,43 @@ class NepiImageViewerApp(object):
     self.publish_status()
 
 
-    rospy.Timer(rospy.Duration(self.update_image_subs_interval_sec), self.updateImageSubsThread)
+    nepi_ros.timer(rospy.Duration(self.update_image_subs_interval_sec), self.updateImageSubsThread)
     ## Initiation Complete
-    rospy.loginfo("resetAppCb:  Initialization Complete")
+    nepi_msg.publishMsgInfo(self,"resetAppCb:  Initialization Complete")
 
     #Set up node shutdown
-    rospy.on_shutdown(self.cleanup_actions)
+    nepi_ros.on_shutdown(self.cleanup_actions)
     # Spin forever (until object is detected)
-    rospy.spin()
+    nepi_ros.spin()
+
+
+
+
+
+
+
+  ###################
+  ## App Callbacks
+
+  def resetAppCb(self,msg):
+    self.resetApp()
+
+  def resetApp(self):
+    nepi_ros.set_param(self,'~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
+    self.publish_status()
+
+  def setImageTopicCb(self,msg):
+    #nepi_msg.publishMsgInfo(self,str(msg))
+    img_index = msg.image_index
+    img_topic = msg.image_topic
+    found_topic = nepi_ros.find_topic(img_topic)
+    if img_index > -1 and img_index < 4 and found_topic != "":
+      current_sel = nepi_ros.get_param(self,'~iv_app/selected_topics', self.init_selected_topics)
+      current_sel[img_index] = found_topic
+    nepi_ros.set_param(self,'~iv_app/selected_topics', current_sel)
+    self.publish_status()
+
+
 
 
   #######################
@@ -138,11 +151,11 @@ class NepiImageViewerApp(object):
     pass
 
   def initParamServerValues(self,do_updates = True):
-      self.init_selected_topics = rospy.get_param('~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
+      self.init_selected_topics = nepi_ros.get_param(self,'~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
       self.resetParamServer(do_updates)
 
   def resetParamServer(self,do_updates = True):
-      rospy.set_param('~iv_app/selected_topics', self.init_selected_topics)
+      nepi_ros.set_param(self,'~iv_app/selected_topics', self.init_selected_topics)
       if do_updates:
           self.updateFromParamServer()
           self.publish_status()
@@ -152,9 +165,9 @@ class NepiImageViewerApp(object):
   ###################
   ## Status Publishers
   def publish_status(self):
-    sel_topics = rospy.get_param('~iv_app/selected_topics',self.init_selected_topics)
+    sel_topics = nepi_ros.get_param(self,'~iv_app/selected_topics',self.init_selected_topics)
     status_msg = str(sel_topics)
-    if not rospy.is_shutdown():
+    if not nepi_ros.is_shutdown():
       self.sel_status_pub.publish(status_msg)
 
 
@@ -163,7 +176,7 @@ class NepiImageViewerApp(object):
 
   def updateImageSubsThread(self,timer):
     # Subscribe to topic image topics if not subscribed
-    sel_topics = rospy.get_param('~iv_app/selected_topics',self.init_selected_topics)
+    sel_topics = nepi_ros.get_param(self,'~iv_app/selected_topics',self.init_selected_topics)
     for sel_topic in sel_topics:
       if sel_topic != "" and sel_topic != "None" and sel_topic not in self.img_subs_dict.keys():
         if nepi_ros.check_for_topic(sel_topic):
@@ -172,18 +185,18 @@ class NepiImageViewerApp(object):
           exec('self.' + topic_uid + '_timestamp = None')
           exec('self.' + topic_uid + '_frame = None')
           exec('self.' + topic_uid + '_lock = threading.Lock()')
-          rospy.loginfo("Subscribing to topic: " + sel_topic)
-          rospy.loginfo("with topic_uid: " + topic_uid)
-          img_sub = rospy.Subscriber(sel_topic, Image, lambda msg: self.imageCb(msg, sel_topic), queue_size = 10)
+          nepi_msg.publishMsgInfo(self,"Subscribing to topic: " + sel_topic)
+          nepi_msg.publishMsgInfo(self,"with topic_uid: " + topic_uid)
+          img_sub = nepi_ros.Subscriber(sel_topic, Image, lambda msg: self.imageCb(msg, sel_topic), queue_size = 10)
           self.img_subs_dict[sel_topic] = img_sub
-          rospy.loginfo("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
+          nepi_msg.publishMsgInfo(self,"IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
     unreg_topic_list = []
     for topic in self.img_subs_dict.keys():
       if topic not in sel_topics:
           img_sub = self.img_subs_dict[topic]
           img_sub.unregister()
-          rospy.loginfo("IMG_VIEW_APP: Image: " + topic + " unregistered")
+          nepi_msg.publishMsgInfo(self,"IMG_VIEW_APP: Image: " + topic + " unregistered")
           unreg_topic_list.append(topic) # Can't change dictionary while looping through dictionary
     for topic in unreg_topic_list: 
           self.img_subs_dict.pop(topic)
@@ -220,7 +233,7 @@ class NepiImageViewerApp(object):
   # Node Cleanup Function
   
   def cleanup_actions(self):
-    rospy.loginfo("IMG_VIEW_APP:  Shutting down: Executing script cleanup actions")
+    nepi_msg.publishMsgInfo(self,"IMG_VIEW_APP:  Shutting down: Executing script cleanup actions")
 
 
 #########################################
