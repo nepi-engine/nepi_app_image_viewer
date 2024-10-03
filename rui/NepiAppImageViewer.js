@@ -15,7 +15,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
-import {createShortUniqueValues, createShortValuesFromNamespaces} from "./Utilities"
+import {createShortValuesFromNamespaces} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -77,7 +77,7 @@ class ImageViewerApp extends Component {
 
 
   render() {
-    const {selectedImageTopics, selectedImageLabels, onEventTriggered} = this.state
+    const {selectedImageTopics, selectedImageLabels} = this.state
 
     const imageOptions = this.createImageTopicsOptions()
     const colCount = ((selectedImageTopics[1] !== null) || (selectedImageTopics[2] !== null) || (selectedImageTopics[3] !== null))? 3 : 2
