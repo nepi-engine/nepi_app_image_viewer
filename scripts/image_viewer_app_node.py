@@ -23,13 +23,17 @@ import time
 import sys
 import numpy as np
 import time
+import subprocess
+import threading
 
 
 from std_msgs.msg import UInt8, Empty, String, Bool, Float32, Int32
 from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
+from nepi_ros_interfaces.msg import StringArray
 
 from nepi_edge_sdk_base import nepi_ros
+from nepi_edge_sdk_base import nepi_save
 from nepi_edge_sdk_base import nepi_msg
 
 from nepi_edge_sdk_base.save_data_if import SaveDataIF
@@ -55,13 +59,13 @@ class NepiImageViewerApp(object):
   update_image_subs_interval_sec = float(1)/UPDATE_IMAGE_SUBS_RATE_HZ
   update_save_data_check_interval_sec = float(1)/UPDATE_SAVE_DATA_CHECK_RATE_HZ
 
-  data_products = ["image_0","image_1","image_2","image_3"]
+  data_products = ["image0","image1","image2","image3"]
   img_subs_dict = dict()
 
 
   #######################
   ### Node Initialization
-  DEFAULT_NODE_NAME = "image_viewer_app" # Can be overwitten by luanch command
+  DEFAULT_NODE_NAME = "app_image_viewer" # Can be overwitten by luanch command
   def __init__(self):
     #### APP NODE INIT SETUP ####
     nepi_ros.init_node(name= self.DEFAULT_NODE_NAME)
@@ -86,10 +90,10 @@ class NepiImageViewerApp(object):
     self.initParamServerValues(do_updates=False)
 
     ## App Subscribers ########################################################
-    set_image_topic_sub = rospy.Subscriber("~set_image_topic", ImageSelection, self.setImageTopicCb, queue_size = 10)
+    set_image_topic_sub = rospy.Subscriber("~set_topic", ImageSelection, self.setImageTopicCb, queue_size = 10)
   
     ## App Publishers
-    self.sel_status_pub = rospy.Publisher("~status", String, queue_size=1, latch=True)
+    self.sel_status_pub = rospy.Publisher("~status", StringArray, queue_size=1, latch=True)
 
     # Give publishers time to setup
     time.sleep(1)
@@ -120,7 +124,7 @@ class NepiImageViewerApp(object):
     self.resetApp()
 
   def resetApp(self):
-    nepi_ros.set_param(self,'~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
+    nepi_ros.set_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
     self.publish_status()
 
   def setImageTopicCb(self,msg):
@@ -129,9 +133,9 @@ class NepiImageViewerApp(object):
     img_topic = msg.image_topic
     found_topic = nepi_ros.find_topic(img_topic)
     if img_index > -1 and img_index < 4 and found_topic != "":
-      current_sel = nepi_ros.get_param(self,'~iv_app/selected_topics', self.init_selected_topics)
+      current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
       current_sel[img_index] = found_topic
-    nepi_ros.set_param(self,'~iv_app/selected_topics', current_sel)
+      nepi_ros.set_param(self,'~selected_topics', current_sel)
     self.publish_status()
 
 
@@ -151,11 +155,11 @@ class NepiImageViewerApp(object):
     pass
 
   def initParamServerValues(self,do_updates = True):
-      self.init_selected_topics = nepi_ros.get_param(self,'~iv_app/selected_topics', self.FACTORY_SELECTED_TOPICS)
+      self.init_selected_topics = nepi_ros.get_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
       self.resetParamServer(do_updates)
 
   def resetParamServer(self,do_updates = True):
-      nepi_ros.set_param(self,'~iv_app/selected_topics', self.init_selected_topics)
+      nepi_ros.set_param(self,'~selected_topics', self.init_selected_topics)
       if do_updates:
           self.updateFromParamServer()
           self.publish_status()
@@ -165,8 +169,8 @@ class NepiImageViewerApp(object):
   ###################
   ## Status Publishers
   def publish_status(self):
-    sel_topics = nepi_ros.get_param(self,'~iv_app/selected_topics',self.init_selected_topics)
-    status_msg = str(sel_topics)
+    sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
+    status_msg = sel_topics
     if not nepi_ros.is_shutdown():
       self.sel_status_pub.publish(status_msg)
 
@@ -176,8 +180,10 @@ class NepiImageViewerApp(object):
 
   def updateImageSubsThread(self,timer):
     # Subscribe to topic image topics if not subscribed
-    sel_topics = nepi_ros.get_param(self,'~iv_app/selected_topics',self.init_selected_topics)
-    for sel_topic in sel_topics:
+    sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
+    #nepi_msg.publishMsgWarn(self,"Selected images: " + str(sel_topics))
+    #nepi_msg.publishMsgWarn(self,"Subs dict keys: " + str(self.img_subs_dict.keys()))
+    for i, sel_topic in enumerate(sel_topics):
       if sel_topic != "" and sel_topic != "None" and sel_topic not in self.img_subs_dict.keys():
         if nepi_ros.check_for_topic(sel_topic):
           topic_uid = sel_topic.replace('/','')
@@ -187,7 +193,8 @@ class NepiImageViewerApp(object):
           exec('self.' + topic_uid + '_lock = threading.Lock()')
           nepi_msg.publishMsgInfo(self,"Subscribing to topic: " + sel_topic)
           nepi_msg.publishMsgInfo(self,"with topic_uid: " + topic_uid)
-          img_sub = nepi_ros.Subscriber(sel_topic, Image, lambda msg: self.imageCb(msg, sel_topic), queue_size = 10)
+          data_product = "image" + str(i)
+          img_sub = rospy.Subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
           self.img_subs_dict[sel_topic] = img_sub
           nepi_msg.publishMsgInfo(self,"IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
@@ -202,28 +209,13 @@ class NepiImageViewerApp(object):
           self.img_subs_dict.pop(topic)
     
 
-  def imageCb(self,msg,topic):
-    pass
+  def imageCb(self,img_msg,data_product):
+    nepi_save.save_ros_img2file(self,data_product,img_msg,img_msg.header.stamp)
+
+
  
       
-    
-  #######################
-  # Data Saving Funcitons
- 
 
-  def save_img2file(self,data_product,cv2_img,ros_timestamp):
-      if self.save_data_if is not None:
-          saving_is_enabled = self.save_data_if.data_product_saving_enabled(data_product)
-          snapshot_enabled = self.save_data_if.data_product_snapshot_enabled(data_product)
-          # Save data if enabled
-          if saving_is_enabled or snapshot_enabled:
-              if cv2_img is not None:
-                  if (self.save_data_if.data_product_should_save(data_product) or snapshot_enabled):
-                      full_path_filename = self.save_data_if.get_full_path_filename(nepi_ros.get_datetime_str_from_stamp(ros_timestamp), 
-                                                                                              "image_viewer_app-" + data_product, 'png')
-                      if os.path.isfile(full_path_filename) is False:
-                          cv2.imwrite(full_path_filename, cv2_img)
-                          self.save_data_if.data_product_snapshot_reset(data_product)
 
              
 

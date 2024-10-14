@@ -13,6 +13,7 @@ FILE_TYPE = 'APP'
 APP_DICT = dict(
     description = 'Application for viewing and saving multiple image streams',
     pkg_name = 'nepi_app_image_viewer',
+    group_name = 'IMAGING',
     config_file = 'app_image_viewer.yaml',
     app_file = 'image_viewer_app_node.py',
     node_name = 'app_image_viewer'
