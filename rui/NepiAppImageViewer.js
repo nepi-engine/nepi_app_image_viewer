@@ -125,6 +125,7 @@ class ImageViewerApp extends Component {
 
   onChangeInputImgSelection(event) {
     const {sendImageSelectionMsg} = this.props.ros
+    var imageTopics = this.state.selectedImageTopics
     const namespace = this.getAppNamespace() 
     const selNamespace = namespace + "/set_topic"
     const idx = event.nativeEvent.target.selectedIndex
@@ -142,8 +143,10 @@ class ImageViewerApp extends Component {
         selector_idx = 3
       }
 
+      imageTopics[selector_idx] = value
       sendImageSelectionMsg(selNamespace,selector_idx,value)
     }
+    this.setState({selectedImageTopics: imageTopics})
 
   }
 
