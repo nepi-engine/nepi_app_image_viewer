@@ -94,9 +94,11 @@ class NepiImageViewerApp(object):
   
     ## App Publishers
     self.sel_status_pub = rospy.Publisher("~status", StringArray, queue_size=1, latch=True)
-
+    time.sleep(1)
+    rospy.Timer(rospy.Duration(0.5), self.statusPublishCb)
     # Give publishers time to setup
     time.sleep(1)
+
 
     # Publish Status
     self.publish_status()
@@ -168,6 +170,10 @@ class NepiImageViewerApp(object):
 
   ###################
   ## Status Publishers
+
+  def statusPublishCb(self,timer):
+      self.publish_status()
+
   def publish_status(self):
     sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
     status_msg = sel_topics
