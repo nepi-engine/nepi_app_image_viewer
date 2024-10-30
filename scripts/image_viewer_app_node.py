@@ -176,6 +176,10 @@ class NepiImageViewerApp(object):
 
   def publish_status(self):
     sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
+    for i, topic in enumerate(sel_topics):
+      if topic != "None":
+        if nepi_ros.find_topic(topic) == "":
+          sel_topics[i] = "None"
     status_msg = sel_topics
     if not nepi_ros.is_shutdown():
       self.sel_status_pub.publish(status_msg)

@@ -147,7 +147,6 @@ class ImageViewerApp extends Component {
       sendImageSelectionMsg(selNamespace,selector_idx,value)
     }
     this.setState({selectedImageTopics: imageTopics})
-
   }
 
   getSelectedImageTopics(){
@@ -156,9 +155,10 @@ class ImageViewerApp extends Component {
   }
 
   render() {
-    const selectedImageTopics = this.getSelectedImageTopics()
-    const appNamespace = this.getAppNamespace()
     const imageOptions = this.createImageTopicsOptions()
+    const selectedImageTopics = this.getSelectedImageTopics()
+    const selectedImageText = createShortValuesFromNamespaces(selectedImageTopics)
+    const appNamespace = this.getAppNamespace()
     const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 3 : 2
     const selectionFlexSize = (colCount === 3)? 0.6 : 0.3
     
@@ -171,13 +171,13 @@ class ImageViewerApp extends Component {
         <Column>
           <CameraViewer
             imageTopic={selectedImageTopics[0]}
-            title={selectedImageTopics[0]}
+            title={selectedImageText[0]}
             hideQualitySelector={false}
           />
           {(selectedImageTopics[2] !== 'None')?
             <CameraViewer
             imageTopic={selectedImageTopics[2]}
-            title={selectedImageTopics[2]}
+            title={selectedImageText[2]}
             hideQualitySelector={false}
           />          
           : null
@@ -187,13 +187,13 @@ class ImageViewerApp extends Component {
         <Column>
           <CameraViewer
             imageTopic={selectedImageTopics[1]}
-            title={selectedImageTopics[1]}
+            title={selectedImageText[1]}
             hideQualitySelector={false}
           />
           {(selectedImageTopics[3] !== 'None')?
             <CameraViewer
               imageTopic={selectedImageTopics[3]}
-              title={selectedImageTopics[3]}
+              title={selectedImageText[3]}
               hideQualitySelector={false}
             />          
           : null
