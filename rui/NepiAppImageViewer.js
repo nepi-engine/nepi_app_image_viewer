@@ -24,6 +24,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
+import Styles from "./Styles"
 
 import CameraViewer from "./CameraViewer"
 import {createShortValuesFromNamespaces} from "./Utilities"
@@ -165,6 +166,7 @@ class ImageViewerApp extends Component {
   }
 
   render() {
+    const {sendTriggerMsg} = this.props.ros
     const imageOptions = this.createImageTopicsOptions()
     const selectedImageTopics = this.getSelectedImageTopics()
     const selectedImageText = createShortValuesFromNamespaces(selectedImageTopics)
@@ -214,42 +216,80 @@ class ImageViewerApp extends Component {
 
         <Column style={{flex: selectionFlexSize}}>
           <Label title={"Img 1"}>
-            <Select onChange={this.onChangeInputImgSelection} id="ImageSelector_0">
+            <Select onChange={this.onChangeInputImgSelection} 
+            id="ImageSelector_0"
+            value={selectedImageTopics[0]}>
+              
               {imageOptions}
             </Select>
           </Label>
           <Label title={"Img 2"}>
-            <Select onChange={this.onChangeInputImgSelection} id="ImageSelector_1">
+            <Select onChange={this.onChangeInputImgSelection} 
+            id="ImageSelector_1"
+            value={selectedImageTopics[1]}>
               {imageOptions}
             </Select>
           </Label>
           <Label title={"Img 3"}>
-            <Select onChange={this.onChangeInputImgSelection} id="ImageSelector_2">
+            <Select onChange={this.onChangeInputImgSelection} 
+            id="ImageSelector_2"
+            value={selectedImageTopics[2]}>
               {imageOptions}
             </Select>
           </Label>
           <Label title={"Img 4"}>
-            <Select onChange={this.onChangeInputImgSelection} id="ImageSelector_3">
+            <Select onChange={this.onChangeInputImgSelection} 
+            id="ImageSelector_3"
+            value={selectedImageTopics[3]}>
               {imageOptions}
             </Select>
           </Label>
-          <div align={"left"} textAlign={"left"}  >
-            <ButtonMenu>
-              <Button onClick={this.onEventTriggered}>{"Event Trigger"}</Button>
-            </ButtonMenu>
-          </div>
-        </Column>
-      </Columns>
 
-      <div hidden={appNamespace === null}>
-      <NepiIFSaveData
+
+
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <Columns>
+            <Column>
+
+              <ButtonMenu>
+                <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_app")}>{"Reset App"}</Button>
+              </ButtonMenu>
+
+              </Column>
+            <Column>
+
+                <ButtonMenu>
+                  <Button onClick={() => sendTriggerMsg(appNamespace + "/save_config")}>{"Save Config"}</Button>
+            </ButtonMenu>
+
+            </Column>
+            <Column>
+
+            <ButtonMenu>
+                  <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_config")}>{"Reset Config"}</Button>
+            </ButtonMenu>
+
+
+            </Column>
+          </Columns>
+
+
+          <div hidden={appNamespace === null}>
+          <NepiIFSaveData
           saveNamespace={appNamespace}
           title={"Nepi_IF_SaveData"}
       />
       </div>
 
+        </Column>
+      </Columns>
+
+
     </Column>
     </Columns>
+
+
 
     )
   }
