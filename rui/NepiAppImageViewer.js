@@ -140,7 +140,6 @@ class ImageViewerApp extends Component {
     const namespace = this.getAppNamespace() 
     const selNamespace = namespace + "/set_topic"
     const idx = event.nativeEvent.target.selectedIndex
-    const text = event.nativeEvent.target[idx].text
     const value = event.target.value
     if (namespace !== null){    
       var selector_idx = 0
