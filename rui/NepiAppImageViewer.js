@@ -139,22 +139,21 @@ class ImageViewerApp extends Component {
     var imageTopics = this.state.selectedImageTopics
     const namespace = this.getAppNamespace() 
     const selNamespace = namespace + "/set_topic"
-    const idx = event.nativeEvent.target.selectedIndex
     const value = event.target.value
     if (namespace !== null){    
-      var selector_idx = 0
+      var selector_img = 0
       if (event.nativeEvent.target.id === "ImageSelector_1") {
-        selector_idx = 1
+        selector_img = 1
       }
       else if (event.nativeEvent.target.id === "ImageSelector_2") {
-        selector_idx = 2
+        selector_img = 2
       }
       else if (event.nativeEvent.target.id === "ImageSelector_3") {
-        selector_idx = 3
+        selector_img = 3
       }
 
-      imageTopics[selector_idx] = value
-      sendImageSelectionMsg(selNamespace,selector_idx,value)
+      imageTopics[selector_img] = value
+      sendImageSelectionMsg(selNamespace,selector_img,value)
     }
     this.setState({selectedImageTopics: imageTopics})
   }
