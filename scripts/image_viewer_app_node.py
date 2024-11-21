@@ -135,7 +135,7 @@ class NepiImageViewerApp(object):
     img_index = msg.image_index
     img_topic = msg.image_topic
     found_topic = nepi_ros.find_topic(img_topic)
-    if img_index > -1 and img_index < 4 and found_topic != "":
+    if img_index > -1 and img_index < 4 and img_topic != "None" and found_topic != "":
       current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
       current_sel[img_index] = found_topic
       nepi_ros.set_param(self,'~selected_topics', current_sel)
