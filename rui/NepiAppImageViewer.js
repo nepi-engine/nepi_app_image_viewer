@@ -71,7 +71,6 @@ class ImageViewerApp extends Component {
     this.setState({
       selectedImageTopics: message.entries
   })
-
     this.setState({
       connected: true
     })
@@ -92,7 +91,6 @@ class ImageViewerApp extends Component {
           )
       this.setState({ 
         statusListener: statusListener,
-        needs_update: false
       })
     }
 
@@ -101,8 +99,7 @@ class ImageViewerApp extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getAppNamespace()
     const namespace_updated = (prevState.appNamespace !== namespace && namespace !== null)
-    const needs_update = (this.state.needs_update && namespace !== null)
-    if (namespace_updated || needs_update) {
+    if (namespace_updated) {
       if (namespace.indexOf('null') === -1){
         this.setState({appNamespace: namespace})
         this.updateStatusListener()
@@ -164,6 +161,9 @@ class ImageViewerApp extends Component {
   }
 
   render() {
+    if (this.state.needs_update === true){
+      this.setState({needs_update: false})
+    }
     const {sendTriggerMsg} = this.props.ros
     const imageOptions = this.createImageTopicsOptions()
     const selectedImageTopics = this.getSelectedImageTopics()

@@ -134,11 +134,13 @@ class NepiImageViewerApp(object):
     #nepi_msg.publishMsgInfo(self,str(msg))
     img_index = msg.image_index
     img_topic = msg.image_topic
-    found_topic = nepi_ros.find_topic(img_topic)
-    if img_index > -1 and img_index < 4 and img_topic != "None" and found_topic != "":
-      current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
-      current_sel[img_index] = found_topic
-      nepi_ros.set_param(self,'~selected_topics', current_sel)
+    #if img_index > -1 and img_index < 4 and img_topic != "None" and found_topic != "":
+      #current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
+      #current_sel[img_index] = found_topic
+      #nepi_ros.set_param(self,'~selected_topics', current_sel)
+    current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
+    current_sel[img_index] = img_topic
+    nepi_ros.set_param(self,'~selected_topics', current_sel)
     self.publish_status()
 
 
@@ -177,10 +179,10 @@ class NepiImageViewerApp(object):
 
   def publish_status(self):
     sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
-    for i, topic in enumerate(sel_topics):
-      if topic != "None":
-        if nepi_ros.find_topic(topic) == "":
-          sel_topics[i] = "None"
+    #for i, topic in enumerate(sel_topics):
+      #if topic != "None":
+        #if nepi_ros.find_topic(topic) == "":
+          #sel_topics[i] = "None"
     status_msg = sel_topics
     if not nepi_ros.is_shutdown():
       self.sel_status_pub.publish(status_msg)
