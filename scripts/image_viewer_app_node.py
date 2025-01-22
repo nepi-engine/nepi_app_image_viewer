@@ -35,12 +35,12 @@ from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
 from nepi_ros_interfaces.msg import StringArray
 
-from nepi_edge_sdk_base import nepi_ros
-from nepi_edge_sdk_base import nepi_save
-from nepi_edge_sdk_base import nepi_msg
+from nepi_sdk import nepi_ros
+from nepi_sdk import nepi_save
+from nepi_sdk import nepi_msg
 
-from nepi_edge_sdk_base.save_data_if import SaveDataIF
-from nepi_edge_sdk_base.save_cfg_if import SaveCfgIF
+from nepi_sdk.save_data_if import SaveDataIF
+from nepi_sdk.save_cfg_if import SaveCfgIF
 
 
 #########################################
