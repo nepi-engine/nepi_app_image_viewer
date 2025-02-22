@@ -29,7 +29,7 @@ import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"
 
 import CameraViewer from "./CameraViewer"
-import {createShortValuesFromNamespaces} from "./Utilities"
+import {createShortImagesFromNamespaces} from "./Utilities"
 
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
@@ -49,7 +49,7 @@ class ImageViewerApp extends Component {
       selectedImageTopics: ['None','None','None','None'],
       statusListener: null,
       connected: false,
-      needs_update: true
+      needs_update: false
     }
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
     this.onChangeInputImgSelection = this.onChangeInputImgSelection.bind(this)
@@ -96,6 +96,10 @@ class ImageViewerApp extends Component {
       })
     }
 
+    componentDidMount(){
+      this.setState({needs_update: true})
+    }
+
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -126,7 +130,9 @@ class ImageViewerApp extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>) 
     const { imageTopics } = this.props.ros
-    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
+    const { namespacePrefix, deviceId} = this.props.ros
+    const baseNamespace = "/" + namespacePrefix + "/" + deviceId + "/"
+    var imageTopicShortnames = createShortImagesFromNamespaces(baseNamespace, imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
     }
@@ -169,7 +175,9 @@ class ImageViewerApp extends Component {
     const {sendTriggerMsg} = this.props.ros
     const imageOptions = this.createImageTopicsOptions()
     const selectedImageTopics = this.getSelectedImageTopics()
-    const selectedImageText = createShortValuesFromNamespaces(selectedImageTopics)
+    const { namespacePrefix, deviceId} = this.props.ros
+    const baseNamespace = "/" + namespacePrefix + "/" + deviceId + "/"
+    const selectedImageText = createShortImagesFromNamespaces(baseNamespace, selectedImageTopics)
     const appNamespace = this.getAppNamespace()
     const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 3 : 2
     const selectionFlexSize = (colCount === 3)? 0.6 : 0.3
