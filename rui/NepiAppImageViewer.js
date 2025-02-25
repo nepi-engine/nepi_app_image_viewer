@@ -131,7 +131,7 @@ class ImageViewerApp extends Component {
     items.push(<Option>{"None"}</Option>) 
     const { imageTopics } = this.props.ros
     const { namespacePrefix, deviceId} = this.props.ros
-    const baseNamespace = "/" + namespacePrefix + "/" + deviceId + "/"
+    const baseNamespace = "/" + namespacePrefix + "/" + deviceId
     var imageTopicShortnames = createShortImagesFromNamespaces(baseNamespace, imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
@@ -176,7 +176,7 @@ class ImageViewerApp extends Component {
     const imageOptions = this.createImageTopicsOptions()
     const selectedImageTopics = this.getSelectedImageTopics()
     const { namespacePrefix, deviceId} = this.props.ros
-    const baseNamespace = "/" + namespacePrefix + "/" + deviceId + "/"
+    const baseNamespace = "/" + namespacePrefix + "/" + deviceId 
     const selectedImageText = createShortImagesFromNamespaces(baseNamespace, selectedImageTopics)
     const appNamespace = this.getAppNamespace()
     const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 3 : 2
