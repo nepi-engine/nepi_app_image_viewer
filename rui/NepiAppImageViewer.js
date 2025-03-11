@@ -51,13 +51,28 @@ class ImageViewerApp extends Component {
       connected: false,
       needs_update: false
     }
+
+    this.getBaseNamespace = this.getBaseNamespace.bind(this)
+    this.getAppNamespace = this.getAppNamespace.bind(this)
+
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
     this.onChangeInputImgSelection = this.onChangeInputImgSelection.bind(this)
     this.statusListener = this.statusListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
-    this.getAppNamespace = this.getAppNamespace.bind(this)
+
     this.getSelectedImageTopics = this.getSelectedImageTopics.bind(this)
   }
+
+
+  getBaseNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId 
+    }
+    return baseNamespace
+  }
+
 
   getAppNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
@@ -130,8 +145,7 @@ class ImageViewerApp extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>) 
     const { imageTopics } = this.props.ros
-    const { namespacePrefix, deviceId} = this.props.ros
-    const baseNamespace = "/" + namespacePrefix + "/" + deviceId
+    const baseNamespace = this.getBaseNamespace()
     var imageTopicShortnames = createShortImagesFromNamespaces(baseNamespace, imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
@@ -187,7 +201,7 @@ class ImageViewerApp extends Component {
       <Columns>
         <Column>
 
-      <Columns>
+      <Columns equalWidth={true}>
         <Column>
           <CameraViewer
             imageTopic={selectedImageTopics[0]}
