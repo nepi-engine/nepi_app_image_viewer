@@ -193,128 +193,153 @@ class ImageViewerApp extends Component {
     const baseNamespace = "/" + namespacePrefix + "/" + deviceId 
     const selectedImageText = createShortImagesFromNamespaces(baseNamespace, selectedImageTopics)
     const appNamespace = this.getAppNamespace()
-    const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 3 : 2
-    const selectionFlexSize = (colCount === 3)? 0.6 : 0.3
+    const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 2 : 1
+    const colFlexSize_1 = (colCount === 1)? "100%" : "50%"
+    const colFlexSize_2 = (colCount === 1)? "0%" : "50%"
     
     
     return (
-      <Columns>
-        <Column>
 
-      <Columns equalWidth={true}>
-        <Column>
-          <CameraViewer
-            imageTopic={selectedImageTopics[0]}
-            title={selectedImageText[0]}
-            hideQualitySelector={false}
-          />
-          {(selectedImageTopics[2] !== 'None')?
-            <CameraViewer
-            imageTopic={selectedImageTopics[2]}
-            title={selectedImageText[2]}
-            hideQualitySelector={false}
-          />          
-          : null
-          }
-        </Column>
-        {(colCount === 3)?
-        <Column>
-          <CameraViewer
-            imageTopic={selectedImageTopics[1]}
-            title={selectedImageText[1]}
-            hideQualitySelector={false}
-          />
-          {(selectedImageTopics[3] !== 'None')?
-            <CameraViewer
-              imageTopic={selectedImageTopics[3]}
-              title={selectedImageText[3]}
-              hideQualitySelector={false}
-            />          
-          : null
-          }
-        </Column>
-        : null
-        }
+      <div style={{ display: 'flex' }}>
 
-        <Column style={{flex: selectionFlexSize}}>
-          <Label title={"Img 1"}>
-            <Select onChange={this.onChangeInputImgSelection} 
-            id="ImageSelector_0"
-            value={selectedImageTopics[0]}>
-              
-              {imageOptions}
-            </Select>
-          </Label>
-          <Label title={"Img 2"}>
-            <Select onChange={this.onChangeInputImgSelection} 
-            id="ImageSelector_1"
-            value={selectedImageTopics[1]}>
-              {imageOptions}
-            </Select>
-          </Label>
-          <Label title={"Img 3"}>
-            <Select onChange={this.onChangeInputImgSelection} 
-            id="ImageSelector_2"
-            value={selectedImageTopics[2]}>
-              {imageOptions}
-            </Select>
-          </Label>
-          <Label title={"Img 4"}>
-            <Select onChange={this.onChangeInputImgSelection} 
-            id="ImageSelector_3"
-            value={selectedImageTopics[3]}>
-              {imageOptions}
-            </Select>
-          </Label>
+           <div style={{ width: "75%" }}>
+        
+     
+                <div style={{ display: 'flex' }}>
+
+                        <div style={{ width: colFlexSize_1 }}>
+
+                              <CameraViewer
+                                imageTopic={selectedImageTopics[0]}
+                                title={selectedImageText[0]}
+                                hideQualitySelector={true}
+                                squareCanvas={true}
+                              />
+                              {(selectedImageTopics[2] !== 'None')?
+                                <CameraViewer
+                                imageTopic={selectedImageTopics[2]}
+                                title={selectedImageText[2]}
+                                hideQualitySelector={true}
+                                squareCanvas={true}
+                              />          
+                              : null
+                              }
+
+                        </div>
+
+  
+
+                        <div style={{ width: colFlexSize_2 }}>
+
+                              {(selectedImageTopics[1] !== 'None' || selectedImageTopics[3] !== 'None' )?
+                                <CameraViewer
+                                  imageTopic={selectedImageTopics[1]}
+                                  title={selectedImageText[1]}
+                                  hideQualitySelector={true}
+                                  squareCanvas={true}
+                                />          
+                              : null
+                              }
+
+                              {(selectedImageTopics[3] !== 'None')?
+                                <CameraViewer
+                                  imageTopic={selectedImageTopics[3]}
+                                  title={selectedImageText[3]}
+                                  hideQualitySelector={true}
+                                  squareCanvas={true}
+                                />          
+                              : null
+                              }
+
+                        </div>
 
 
-
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <Columns>
-            <Column>
-
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_app")}>{"Reset App"}</Button>
-              </ButtonMenu>
-
-              </Column>
-            <Column>
-
-                <ButtonMenu>
-                  <Button onClick={() => sendTriggerMsg(appNamespace + "/save_config")}>{"Save Config"}</Button>
-            </ButtonMenu>
-
-            </Column>
-            <Column>
-
-            <ButtonMenu>
-                  <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_config")}>{"Reset Config"}</Button>
-            </ButtonMenu>
+                </div>
 
 
-            </Column>
-          </Columns>
+          </div>
+          <div style={{ width: "25%" }}>
 
 
-          <div hidden={appNamespace === null}>
-          <NepiIFSaveData
-          saveNamespace={appNamespace}
-          title={"Nepi_IF_SaveData"}
-      />
+                   <Label title={"Img 1"}>
+                      <Select onChange={this.onChangeInputImgSelection} 
+                      id="ImageSelector_0"
+                      value={selectedImageTopics[0]}>
+                        
+                        {imageOptions}
+                      </Select>
+                    </Label>
+                    <Label title={"Img 2"}>
+                      <Select onChange={this.onChangeInputImgSelection} 
+                      id="ImageSelector_1"
+                      value={selectedImageTopics[1]}>
+                        {imageOptions}
+                      </Select>
+                    </Label>
+                    <Label title={"Img 3"}>
+                      <Select onChange={this.onChangeInputImgSelection} 
+                      id="ImageSelector_2"
+                      value={selectedImageTopics[2]}>
+                        {imageOptions}
+                      </Select>
+                    </Label>
+                    <Label title={"Img 4"}>
+                      <Select onChange={this.onChangeInputImgSelection} 
+                      id="ImageSelector_3"
+                      value={selectedImageTopics[3]}>
+                        {imageOptions}
+                      </Select>
+                    </Label>
+
+
+
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                    <Columns>
+                      <Column>
+
+
+                              <ButtonMenu>
+                                <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_app")}>{"Reset App"}</Button>
+                              </ButtonMenu>
+
+                        </Column>
+                      <Column>
+
+                                <ButtonMenu>
+                                  <Button onClick={() => sendTriggerMsg(appNamespace + "/save_config")}>{"Save Config"}</Button>
+                            </ButtonMenu>
+
+                      </Column>
+                      <Column>
+
+                              <ButtonMenu>
+                                    <Button onClick={() => sendTriggerMsg( appNamespace + "/reset_config")}>{"Reset Config"}</Button>
+                              </ButtonMenu>
+
+
+                      </Column>
+                    </Columns>
+
+
+                    <div hidden={appNamespace === null}>
+                    <NepiIFSaveData
+                    saveNamespace={appNamespace}
+                    title={"Nepi_IF_SaveData"}
+                    />
+                    </div>
+
+
+          </div>
+      
       </div>
-
-        </Column>
-      </Columns>
-
-
-    </Column>
-    </Columns>
 
 
 
     )
   }
+
+
 }
 
 export default ImageViewerApp

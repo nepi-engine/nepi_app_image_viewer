@@ -39,8 +39,8 @@ from nepi_sdk import nepi_ros
 from nepi_sdk import nepi_save
 from nepi_sdk import nepi_msg
 
-from nepi_sdk.save_data_if import SaveDataIF
-from nepi_sdk.save_cfg_if import SaveCfgIF
+from nepi_api.sys_if_save_data import SaveDataIF
+from nepi_api.sys_if_save_cfg import SaveCfgIF
 
 
 #########################################
@@ -76,40 +76,40 @@ class NepiImageViewerApp(object):
     self.base_namespace = nepi_ros.get_base_namespace()
     nepi_msg.createMsgPublishers(self)
     nepi_msg.publishMsgInfo(self,"Starting Initialization Processes")
-    ##############################
-    self.initParamServerValues(do_updates = False)
-    self.resetParamServer(do_updates = False)
-   
+    ##############################  
+    # Initialize Params
+    self.initCb(do_updates = False)
 
-    # Set up save data and save config services ########################################################
-    self.save_data_if = SaveDataIF(data_product_names = self.data_products)
-    # Temp Fix until added as NEPI ROS Node
-    self.save_cfg_if = SaveCfgIF(updateParamsCallback=self.initParamServerValues, 
-                                 paramsModifiedCallback=self.updateFromParamServer)
+
 
 
     ## App Setup ########################################################
-    app_reset_app_sub = rospy.Subscriber('~reset_app', Empty, self.resetAppCb, queue_size = 10)
-    self.initParamServerValues(do_updates=False)
-
-    ## App Subscribers ########################################################
-    set_image_topic_sub = rospy.Subscriber("~set_topic", ImageSelection, self.setImageTopicCb, queue_size = 10)
-  
     ## App Publishers
     self.sel_status_pub = rospy.Publisher("~status", StringArray, queue_size=1, latch=True)
-    time.sleep(1)
-    rospy.Timer(rospy.Duration(0.5), self.statusPublishCb)
-    # Give publishers time to setup
-    time.sleep(1)
+
+    set_image_topic_sub = rospy.Subscriber("~set_topic", ImageSelection, self.setImageTopicCb, queue_size = 10)
+
+
+    self.save_cfg_if = SaveCfgIF(initCb=self.initCb, resetCb=self.resetCb,  factoryResetCb=self.factoryResetCb)
+    ready = self.save_cfg_if.wait_for_ready()
+
+    ##############################
+    self.initCb(do_updates = True)
+    # Set up save data and save config services ########################################################
+    self.save_data_if = SaveDataIF(data_product_names = self.data_products)
 
 
     # Publish Status
     self.publish_status()
 
+    time.sleep(1)
+    rospy.Timer(rospy.Duration(0.5), self.statusPublishCb)
+    # Give publishers time to setup
+    time.sleep(1)
 
     nepi_ros.timer(rospy.Duration(self.update_image_subs_interval_sec), self.updateImageSubsThread)
     ## Initiation Complete
-    nepi_msg.publishMsgInfo(self,"resetAppCb:  Initialization Complete")
+    nepi_msg.publishMsgInfo(self,"factoryResetCbCb:  Initialization Complete")
 
     #Set up node shutdown
     nepi_ros.on_shutdown(self.cleanup_actions)
@@ -125,12 +125,6 @@ class NepiImageViewerApp(object):
   ###################
   ## App Callbacks
 
-  def resetAppCb(self,msg):
-    self.resetApp()
-
-  def resetApp(self):
-    nepi_ros.set_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
-    self.publish_status()
 
   def setImageTopicCb(self,msg):
     #nepi_msg.publishMsgInfo(self,str(msg))
@@ -151,24 +145,18 @@ class NepiImageViewerApp(object):
   #######################
   ### Config Functions
 
-  def saveConfigCb(self, msg):  # Just update class init values. Saving done by Config IF system
-    pass # Left empty for sim, Should update from param server
+  def factoryResetCb(self):
+    nepi_ros.set_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
+    self.publish_status()
 
-  def setCurrentAsDefault(self):
-    pass # We only use the param server, no member variables to apply to param server
-
-  def updateFromParamServer(self):
-    # Don't need to run any additional functions
-    pass
-
-  def initParamServerValues(self,do_updates = True):
+  def initCb(self,do_updates = False):
       self.init_selected_topics = nepi_ros.get_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
-      self.resetParamServer(do_updates)
+      if do_updates == True:
+        self.resetCb(do_updates)
 
-  def resetParamServer(self,do_updates = True):
+  def resetCb(self,do_updates = True):
       nepi_ros.set_param(self,'~selected_topics', self.init_selected_topics)
       if do_updates:
-          self.updateFromParamServer()
           self.publish_status()
 
 
