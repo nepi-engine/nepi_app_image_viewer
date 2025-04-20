@@ -21,7 +21,7 @@ import os
 # ROS namespace setup
 #NEPI_BASE_NAMESPACE = '/nepi/s2x/'
 #os.environ["ROS_NAMESPACE"] = NEPI_BASE_NAMESPACE[0:-1]
-import rospy
+
 import time
 import sys
 import numpy as np
@@ -71,6 +71,9 @@ class NepiImageViewerApp(object):
 
   #######################
   ### Node Initialization
+
+
+
   DEFAULT_NODE_NAME = "app_image_viewer" # Can be overwitten by luanch command
   def __init__(self):
     #### APP NODE INIT SETUP ####
@@ -92,15 +95,64 @@ class NepiImageViewerApp(object):
 
 
 
-    ## App Setup ########################################################
-    ## App Publishers
-    self.sel_status_pub = rospy.Publisher("~status", StringArray, queue_size=1, latch=True)
+    ## Node Setup ##################
 
-    set_image_topic_sub = rospy.Subscriber("~set_topic", ImageSelection, self.setImageTopicCb, queue_size = 10)
+    # Configs Config Dict ####################
+    self.CFGS_DICT = {
+            'init_callback': self.initCb,
+            'reset_callback': self.resetCb,
+            'factory_reset_callback': self.factoryResetCb,
+            'init_configs': True,
+            'namespace': self.node_namespace
+    }
+
+    # Params Config Dict ####################
+    self.PARAMS_DICT = {
+        'selected_topics': {
+            'namespace': self.node_namespace,
+            'factory_val': []
+        }
+    }
+
+    # Publishers Config Dict ####################
+    self.PUBS_DICT = {
+        'status_pub': {
+            'namespace': self.node_namespace,
+            'topic': 'status',
+            'msg': StringArray,
+            'qsize': 1,
+            'latch': True
+        }
+    }
+
+    # Subscribers Config Dict ####################
+    self.SUBS_DICT = {
+        'set_topic': {
+            'namespace': self.node_namespace,
+            'topic': 'set_topic',
+            'msg': ImageSelection,
+            'qsize': 10,
+            'callback': self.setImageTopicCb, 
+            'callback_args': ()
+        }
+    }
 
 
-    self.save_cfg_if = SaveCfgIF(initCb=self.initCb, resetCb=self.resetCb,  factoryResetCb=self.factoryResetCb)
-    ready = self.save_cfg_if.wait_for_ready()
+    # Create Node Class ####################
+    self.node_if = NodeClassIF(self,
+                    configs_dict = self.CFGS_DICT,
+                    params_dict = self.PARAMS_DICT,
+                    pubs_dict = self.PUBS_DICT,
+                    subs_dict = self.SUBS_DICT,
+                    log_class_name = True
+    )
+
+    ready = self.node_if.wait_for_ready()
+
+
+
+
+
 
     ##############################
     self.initCb(do_updates = True)
@@ -112,11 +164,11 @@ class NepiImageViewerApp(object):
     self.publish_status()
 
     time.sleep(1)
-    rospy.Timer(rospy.Duration(0.5), self.statusPublishCb)
+    self.nepi_ros.start_timer_process(0.5, self.statusPublishCb)
     # Give publishers time to setup
     time.sleep(1)
 
-    nepi_ros.timer(rospy.Duration(self.update_image_subs_interval_sec), self.updateImageSubsThread)
+    nepi_ros.timer(self.update_image_subs_interval_sec, self.updateImageSubsThread)
     ## Initiation Complete
     self.msg_if.pub_info("factoryResetCbCb:  Initialization Complete")
 
@@ -139,13 +191,9 @@ class NepiImageViewerApp(object):
     #self.msg_if.pub_info(str(msg))
     img_index = msg.image_index
     img_topic = msg.image_topic
-    #if img_index > -1 and img_index < 4 and img_topic != "None" and found_topic != "":
-      #current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
-      #current_sel[img_index] = found_topic
-      #nepi_ros.set_param(self,'~selected_topics', current_sel)
-    current_sel = nepi_ros.get_param(self,'~selected_topics', self.init_selected_topics)
+    current_sel = nepi_ros.get_param('selected_topics')
     current_sel[img_index] = img_topic
-    nepi_ros.set_param(self,'~selected_topics', current_sel)
+    self.node_if.set_param('selected_topics', current_sel)
     self.publish_status()
 
 
@@ -155,16 +203,13 @@ class NepiImageViewerApp(object):
   ### Config Functions
 
   def factoryResetCb(self):
-    nepi_ros.set_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
     self.publish_status()
 
   def initCb(self,do_updates = False):
-      self.init_selected_topics = nepi_ros.get_param(self,'~selected_topics', self.FACTORY_SELECTED_TOPICS)
       if do_updates == True:
         self.resetCb(do_updates)
 
   def resetCb(self,do_updates = True):
-      nepi_ros.set_param(self,'~selected_topics', self.init_selected_topics)
       if do_updates:
           self.publish_status()
 
@@ -177,14 +222,14 @@ class NepiImageViewerApp(object):
       self.publish_status()
 
   def publish_status(self):
-    sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
+    sel_topics = self.node_if.get_param('selected_topics')
     #for i, topic in enumerate(sel_topics):
       #if topic != "None":
         #if nepi_ros.find_topic(topic) == "":
           #sel_topics[i] = "None"
     status_msg = sel_topics
     if not nepi_ros.is_shutdown():
-      self.sel_status_pub.publish(status_msg)
+      self.node_if.publish_pub('status_pub',status_msg)
 
 
   #######################
@@ -192,7 +237,7 @@ class NepiImageViewerApp(object):
 
   def updateImageSubsThread(self,timer):
     # Subscribe to topic image topics if not subscribed
-    sel_topics = nepi_ros.get_param(self,'~selected_topics',self.init_selected_topics)
+    sel_topics = self.node_if.get_param('selected_topics')
     #self.msg_if.pub_warn("Selected images: " + str(sel_topics))
     #self.msg_if.pub_warn("Subs dict keys: " + str(self.img_subs_dict.keys()))
     for i, sel_topic in enumerate(sel_topics):
@@ -206,7 +251,7 @@ class NepiImageViewerApp(object):
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
           data_product = "image" + str(i)
-          img_sub = rospy.Subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
+          img_sub = self.nepi_ros.create_subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
