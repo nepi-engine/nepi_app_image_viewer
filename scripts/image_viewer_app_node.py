@@ -37,13 +37,12 @@ from nepi_ros_interfaces.msg import StringArray
 
 from nepi_sdk import nepi_ros
 from nepi_sdk import nepi_utils
-from nepi_sdk import nepi_save
-from nepi_sdk import nepi_msg
+
 
 from nepi_api.node_if import NodeClassIF
 from nepi_api.messages_if import MsgIF
-from nepi_api.sys_if_save_data import SaveDataIF
-from nepi_api.sys_if_save_cfg import SaveCfgIF
+from nepi_api.system_if import SaveDataIF
+from nepi_api.system_if import SaveCfgIF
 
 
 #########################################
@@ -89,13 +88,11 @@ class NepiImageViewerApp(object):
     self.msg_if.pub_info("Starting IF Initialization Processes")
 
     ##############################     
-    # Initialize Params
-    self.initCb(do_updates = False)
+    # Initialize Class Variables
 
 
-
-
-    ## Node Setup ##################
+    ##############################
+    ### Setup Node
 
     # Configs Config Dict ####################
     self.CFGS_DICT = {
@@ -267,7 +264,7 @@ class NepiImageViewerApp(object):
     
 
   def imageCb(self,img_msg,data_product):
-    nepi_save.save_ros_img2file(self,data_product,img_msg,img_msg.header.stamp)
+    self.save_data_if.save_ros_img2file(data_product,img_msg,img_msg.header.stamp)
 
 
  
