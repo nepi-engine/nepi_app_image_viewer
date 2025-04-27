@@ -148,9 +148,6 @@ class NepiImageViewerApp(object):
 
 
 
-
-
-
     ##############################
     self.initCb(do_updates = True)
     # Set up save data and save config services ########################################################
@@ -199,8 +196,7 @@ class NepiImageViewerApp(object):
   #######################
   ### Config Functions
 
-  def factoryResetCb(self):
-    self.publish_status()
+
 
   def initCb(self,do_updates = False):
       if do_updates == True:
@@ -210,7 +206,8 @@ class NepiImageViewerApp(object):
       if do_updates:
           self.publish_status()
 
-
+  def factoryResetCb(self):
+    self.publish_status()
 
   ###################
   ## Status Publishers
