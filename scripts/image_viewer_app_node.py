@@ -185,7 +185,7 @@ class NepiImageViewerApp(object):
     #self.msg_if.pub_info(str(msg))
     img_index = msg.image_index
     img_topic = msg.image_topic
-    current_sel = nepi_ros.get_param('selected_topics')
+    current_sel = self.node_if.get_param('selected_topics')
     current_sel[img_index] = img_topic
     self.node_if.set_param('selected_topics', current_sel)
     self.publish_status()
