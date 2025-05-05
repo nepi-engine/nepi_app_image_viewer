@@ -42,7 +42,6 @@ from nepi_sdk import nepi_utils
 from nepi_api.node_if import NodeClassIF
 from nepi_api.messages_if import MsgIF
 from nepi_api.system_if import SaveDataIF
-from nepi_api.system_if import SaveCfgIF
 
 
 #########################################
