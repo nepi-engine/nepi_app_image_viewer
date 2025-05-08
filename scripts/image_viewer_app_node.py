@@ -150,7 +150,7 @@ class NepiImageViewerApp(object):
     ##############################
     self.initCb(do_updates = True)
     # Set up save data and save config services ########################################################
-    self.save_data_if = SaveDataIF(data_product_names = self.data_products)
+    self.save_data_if = SaveDataIF(data_products = self.data_products)
 
 
     # Publish Status
