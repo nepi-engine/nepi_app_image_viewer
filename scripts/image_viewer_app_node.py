@@ -37,6 +37,7 @@ from nepi_ros_interfaces.msg import StringArray
 
 from nepi_sdk import nepi_ros
 from nepi_sdk import nepi_utils
+from nepi_sdk import nepi_img
 
 
 from nepi_api.node_if import NodeClassIF
@@ -106,7 +107,7 @@ class NepiImageViewerApp(object):
     self.PARAMS_DICT = {
         'selected_topics': {
             'namespace': self.node_namespace,
-            'factory_val': []
+            'factory_val': ["None","None","None","None"]
         }
     }
 
@@ -150,11 +151,8 @@ class NepiImageViewerApp(object):
     ##############################
     self.initCb(do_updates = True)
     # Set up save data and save config services ########################################################
-<<<<<<< HEAD
-    #self.save_data_if = SaveDataIF(data_products = self.data_products)
-=======
     self.save_data_if = SaveDataIF(data_products = self.data_products)
->>>>>>> 8f17d41
+
 
 
     # Publish Status
@@ -185,7 +183,7 @@ class NepiImageViewerApp(object):
 
 
   def setImageTopicCb(self,msg):
-    #self.msg_if.pub_info(str(msg))
+    self.msg_if.pub_info(str(msg))
     img_index = msg.image_index
     img_topic = msg.image_topic
     current_sel = self.node_if.get_param('selected_topics')
@@ -248,7 +246,7 @@ class NepiImageViewerApp(object):
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
           data_product = "image" + str(i)
-          img_sub = nepi_ros.create_subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
+          img_sub = nepi_ros.create_subscriber(sel_topic, Image, self.imageCb, queue_size = 10, callback_args=data_product)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
@@ -263,8 +261,11 @@ class NepiImageViewerApp(object):
           self.img_subs_dict.pop(topic)
     
 
-  def imageCb(self,img_msg,data_product):
-    self.save_data_if.save_ros_img2file(data_product,img_msg,img_msg.header.stamp)
+  def imageCb(self,img_msg, args):
+    data_product = args
+    cv2_img = nepi_img.rosimg_to_cv2img(img_msg)
+    timestamp = nepi_ros.sec_from_timestamp(img_msg.header.stamp)
+    self.save_data_if.save(data_product,cv2_img,timestamp = timestamp)
 
 
  
