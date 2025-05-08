@@ -42,7 +42,6 @@ from nepi_sdk import nepi_utils
 from nepi_api.node_if import NodeClassIF
 from nepi_api.messages_if import MsgIF
 from nepi_api.system_if import SaveDataIF
-from nepi_api.system_if import SaveCfgIF
 
 
 #########################################
@@ -151,18 +150,18 @@ class NepiImageViewerApp(object):
     ##############################
     self.initCb(do_updates = True)
     # Set up save data and save config services ########################################################
-    self.save_data_if = SaveDataIF(data_product_names = self.data_products)
+    #self.save_data_if = SaveDataIF(data_products = self.data_products)
 
 
     # Publish Status
     self.publish_status()
 
     time.sleep(1)
-    self.nepi_ros.start_timer_process(0.5, self.statusPublishCb)
+    nepi_ros.start_timer_process(0.5, self.statusPublishCb)
     # Give publishers time to setup
     time.sleep(1)
 
-    nepi_ros.timer(self.update_image_subs_interval_sec, self.updateImageSubsThread)
+    nepi_ros.start_timer_process(self.update_image_subs_interval_sec, self.updateImageSubsThread)
     ## Initiation Complete
     self.msg_if.pub_info("factoryResetCbCb:  Initialization Complete")
 
@@ -245,7 +244,7 @@ class NepiImageViewerApp(object):
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
           data_product = "image" + str(i)
-          img_sub = self.nepi_ros.create_subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
+          img_sub = nepi_ros.create_subscriber(sel_topic, Image, lambda img_msg: self.imageCb(img_msg, data_product), queue_size = 10)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
