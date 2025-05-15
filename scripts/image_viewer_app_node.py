@@ -64,7 +64,7 @@ class NepiImageViewerApp(object):
   update_image_subs_interval_sec = float(1)/UPDATE_IMAGE_SUBS_RATE_HZ
   update_save_data_check_interval_sec = float(1)/UPDATE_SAVE_DATA_CHECK_RATE_HZ
 
-  data_products = ["image0","image1","image2","image3"]
+  data_products = ["image1","image2","image3","image4"]
   img_subs_dict = dict()
 
 
@@ -150,8 +150,29 @@ class NepiImageViewerApp(object):
 
     ##############################
     self.initCb(do_updates = True)
-    # Set up save data and save config services ########################################################
-    self.save_data_if = SaveDataIF(data_products = self.data_products)
+
+    # Setup Save Data IF Class ####################
+    self.msg_if.pub_info("Starting Save Data IF Initialization")
+    factory_data_rates= {}
+    for d in self.data_products_list:
+        factory_data_rates[d] = [0.0, 0.0, 100.0] # Default to 0Hz save rate, set last save = 0.0, max rate = 100.0Hz
+    if 'image1' in self.data_products_list:
+        factory_data_rates['color_2d_image'] = [1.0, 0.0, 100.0] 
+    self.msg_if.pub_warn("Starting data products list: " + str(self.data_products_list))
+
+    factory_filename_dict = {
+        'prefix': "", 
+        'add_timestamp': True, 
+        'add_ms': True,
+        'add_us': False,
+        'suffix': "",
+        'add_node_name': True
+        }
+
+
+    self.save_data_if = SaveDataIF(data_products = self.data_products_list,
+                            factory_rate_dict = factory_data_rates,
+                            factory_filename_dict = factory_filename_dict)
 
 
 
@@ -245,7 +266,7 @@ class NepiImageViewerApp(object):
           exec('self.' + topic_uid + '_lock = threading.Lock()')
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
-          data_product = "image" + str(i)
+          data_product = "image" + str(i + 1)
           img_sub = nepi_ros.create_subscriber(sel_topic, Image, self.imageCb, queue_size = 10, callback_args=data_product)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
