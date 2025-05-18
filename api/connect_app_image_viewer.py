@@ -9,14 +9,31 @@
 #
 
 
+import os
+import time
+import sys
+import numpy as np
+import time
+import subprocess
+import threading
 
 
+from std_msgs.msg import UInt8, Empty, String, Bool, Float32, Int32
+from sensor_msgs.msg import Image
+from nepi_app_image_viewer.msg import ImageSelection
+from nepi_ros_interfaces.msg import StringArray
+
+from nepi_sdk import nepi_ros
+from nepi_sdk import nepi_utils
+from nepi_sdk import nepi_img
+
+from nepi_api.messages_if import MsgIF
+from nepi_api.connect_system_if import ConnectSaveDataIF
 from nepi_api.connect_node_if import ConnectNodeClassIF
 
+APP_NODE_NAME = 'app_image_viewer'
 
-APP_NODE_NAME = 'app_file_pub_img'
-
-class ConnectAppFilePubImgIF:
+class ConnectAppImageViewer:
     msg_if = None
     ready = False
     namespace = '~'
@@ -65,24 +82,37 @@ class ConnectAppFilePubImgIF:
 
 
         # Services Config Dict ####################
-        self.SRVS_DICT = {
-            'service_name': {
-                'namespace': self.namespace,
-                'topic': 'empty_query',
-                'srv': EmptySrv,
-                'req': EmptySrvRequest(),
-                'resp': EmptySrvResponse(),
-            }
-        }
+        self.SRVS_DICT = None
 
 
         # Publishers Config Dict ####################
         self.PUBS_DICT = {
-            'sub_name': {
-                'namespace': self.namespace,
-                'topic': 'set_empty',
-                'msg': EmptyMsg,
-                'qsize': 1,
+            'set_topic': {
+                'namespace': self.node_namespace,
+                'topic': 'set_topic',
+                'msg': ImageSelection,
+                'qsize': 10,
+                'latch': False
+            },
+            'save_config': {
+                'namespace': self.node_namespace,
+                'topic': 'save_config',
+                'msg': Empty,
+                'qsize': None,
+                'latch': False
+            },
+            'reset_config': {
+                'namespace': self.node_namespace,
+                'topic': 'reset_config',
+                'msg': Empty,
+                'qsize': None,
+                'latch': False
+            },
+            'factory_reset_config': {
+                'namespace': self.node_namespace,
+                'topic': 'factory_reset_config',
+                'msg': Empty,
+                'qsize': None,
                 'latch': False
             }
         }
@@ -90,10 +120,10 @@ class ConnectAppFilePubImgIF:
 
         # Subscribers Config Dict ####################
         self.SUBS_DICT = {
-            'status_sub': {
-                'msg': PointcloudStatus,
-                'namespace': self.namespace,
+            'status_pub': {
+                'namespace': self.node_namespace,
                 'topic': 'status',
+                'msg': StringArray,
                 'qsize': 1,
                 'callback': self._statusCb
             }
@@ -102,18 +132,21 @@ class ConnectAppFilePubImgIF:
 
         # Create Node Class ####################
         
-        self.con_node_if = NodeClassIF(
+        self.con_node_if = ConnectNodeClassIF(
+                        namespace = self.namespace,
                         configs_dict = self.CFGS_DICT,
                         services_dict = self.SRVS_DICT,
                         pubs_dict = self.PUBS_DICT,
                         subs_dict = self.SUBS_DICT,
-                        log_class_name = True
+                        log_class_name = True,
+                        msg_if = self.msg_if
         )
 
         
 
         self.con_node_if.wait_for_ready()
 
+        self.con_save_data_if = ConnectSaveDataIF(namespace = self.namespace)
 
         ##############################
         # Complete Initialization
@@ -192,9 +225,50 @@ class ConnectAppFilePubImgIF:
     def unregister(self):
         self._unsubscribeTopic()
 
+    def set_viewer_topic(self,set_topic):
+        pub_name = 'set_topic'
+        msg = set_topic
+        self.con_node_if.publish_pub(pub_name,msg)  
 
+    def save_config(self):
+        self.con_node_if.publish_pub('save_config',Empty())
 
+    def reset_config(self):
+        self.con_node_if.publish_pub('reset_config',Empty())
 
+    def factory_reset_config(self):
+        self.con_node_if.publish_pub('factory_reset_config',Empty())
+        
+    #################
+    ## Save Data Functions
+
+    def get_data_products(self):
+        data_products = self.con_save_data_if.get_data_products()
+        return data_products
+
+    def get_status_dict(self):
+        status_dict = self.con_save_data_if.get_status_dict()
+        return status_dict
+
+    def save_data_pub(self,enable):
+        self.con_save_data_if.save_data_pub(enable)
+
+    def save_data_prefix_pub(self,prefix):
+        self.con_save_data_if.save_data_prefix_pub(prefix)
+
+    def save_data_rate_pub(self,rate_hz, data_product = SaveDataRate.ALL_DATA_PRODUCTS):
+        self.con_save_data_if.publish_pub(rate_hz, data_product = SaveDataRate.ALL_DATA_PRODUCTS)
+
+    def snapshot_pub(self):
+        self.con_save_data_if.publish_pub()
+
+    def reset_pub(self):
+        self.con_save_data_if.publish_pub(pub_name,msg)
+
+    def factory_reset_pub(self):
+        pub_name = 'factory_reset'
+        msg = Empty()
+        self.con_save_data_if.publish_pub(pub_name,msg)
 
     ###############################
     # Class Private Methods
