@@ -29,7 +29,7 @@ import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"
 import Toggle from "react-toggle"
 
-import CameraViewer from "./CameraViewer"
+import ImageViewer from "./Nepi_IF_ImageViewer"
 import {createShortImagesFromNamespaces} from "./Utilities"
 
 import NepiIFSaveData from "./Nepi_IF_SaveData"
@@ -227,14 +227,14 @@ class ImageViewerApp extends Component {
 
                   <div style={{ width: colFlexSize_1 }}>
 
-                              <CameraViewer
+                              <ImageViewer
                                 imageTopic={selectedImageTopics[0]}
                                 title={selectedImageText[0]}
                                 hideQualitySelector={true}
                                 squareCanvas={true}
                               />
                               {(selectedImageTopics[2] !== 'None')?
-                                <CameraViewer
+                                <ImageViewer
                                 imageTopic={selectedImageTopics[2]}
                                 title={selectedImageText[2]}
                                 hideQualitySelector={true}
@@ -250,7 +250,7 @@ class ImageViewerApp extends Component {
                         <div style={{ width: colFlexSize_2 }}>
 
                               {(selectedImageTopics[1] !== 'None' || selectedImageTopics[3] !== 'None' )?
-                                <CameraViewer
+                                <ImageViewer
                                   imageTopic={selectedImageTopics[1]}
                                   title={selectedImageText[1]}
                                   hideQualitySelector={true}
@@ -260,7 +260,7 @@ class ImageViewerApp extends Component {
                               }
 
                               {(selectedImageTopics[3] !== 'None')?
-                                <CameraViewer
+                                <ImageViewer
                                   imageTopic={selectedImageTopics[3]}
                                   title={selectedImageText[3]}
                                   hideQualitySelector={true}
