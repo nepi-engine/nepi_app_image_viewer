@@ -27,6 +27,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"
+import Toggle from "react-toggle"
 
 import CameraViewer from "./CameraViewer"
 import {createShortImagesFromNamespaces} from "./Utilities"
@@ -49,8 +50,10 @@ class ImageViewerApp extends Component {
       selectedImageTopics: ['None','None','None','None'],
       statusListener: null,
       connected: false,
-      needs_update: false
+      needs_update: false,
+      showFullscreen: false
     }
+    this.onClickToggleShowFullscreen = this.onClickToggleShowFullscreen.bind(this)
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.getAppNamespace = this.getAppNamespace.bind(this)
@@ -182,6 +185,10 @@ class ImageViewerApp extends Component {
     return imageTopics
   }
 
+  onClickToggleShowFullscreen() {
+    this.setState({ showFullscreen: !this.state.showFullscreen });
+  }
+
   render() {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
@@ -196,18 +203,29 @@ class ImageViewerApp extends Component {
     const colCount = ((selectedImageTopics[1] !== 'None') || (selectedImageTopics[2] !== 'None') || (selectedImageTopics[3] !== 'None'))? 2 : 1
     const colFlexSize_1 = (colCount === 1)? "100%" : "50%"
     const colFlexSize_2 = (colCount === 1)? "0%" : "50%"
+    const flexSize = this.state.showFullscreen === true ? ['100%','0%','0%'] : ['70%','2%','28%']
     
     
     return (
+    <div>
+      <div style={{ width: "10%" }}>
+        <div style={{ marginBottom: "10px" }}>
+          <Label title="fullscreen"> 
+            <Toggle
+              checked={this.state.showFullscreen}
+              onClick={this.onClickToggleShowFullscreen}>
+            </Toggle>
+          </Label>
+        </div>
+      </div>
 
       <div style={{ display: 'flex' }}>
 
-           <div style={{ width: "75%" }}>
-        
+           <div style={{ width: flexSize[0] }}>
      
                 <div style={{ display: 'flex' }}>
 
-                        <div style={{ width: colFlexSize_1 }}>
+                  <div style={{ width: colFlexSize_1 }}>
 
                               <CameraViewer
                                 imageTopic={selectedImageTopics[0]}
@@ -258,40 +276,45 @@ class ImageViewerApp extends Component {
 
 
           </div>
-          <div style={{ width: "25%" }}>
+
+          <div style={{ width: flexSize[1] }}>
+          </div>
+
+          <div hidden={this.state.showFullscreen}>
+
+          <div style={{width: flexSize[2]}}>
 
 
-                   <Label title={"Img 1"}>
+                     <Label title={"Img 1"} div style={{display:"flex", flexWrap:"wrap", justifyContent:"space-between"}}>
                       <Select onChange={this.onChangeInputImgSelection} 
-                      id="ImageSelector_0"
-                      value={selectedImageTopics[0]}>
-                        
+                        id="ImageSelector_0"
+                        value={selectedImageTopics[0]}>                       
                         {imageOptions}
                       </Select>
                     </Label>
-                    <Label title={"Img 2"}>
+                    <Label title={"Img 2"} style={{ marginRight: '15px', minWidth: '200px' }}>
                       <Select onChange={this.onChangeInputImgSelection} 
-                      id="ImageSelector_1"
-                      value={selectedImageTopics[1]}>
+                          id="ImageSelector_1"
+                          value={selectedImageTopics[1]}>
+                          {imageOptions}
+                      </Select>
+                    </Label>
+                    <Label title={"Img 3"} style={{ marginRight: '20px', minWidth: '150px' }}>
+                      <Select onChange={this.onChangeInputImgSelection} 
+                        id="ImageSelector_2"
+                        value={selectedImageTopics[2]}>
                         {imageOptions}
                       </Select>
                     </Label>
-                    <Label title={"Img 3"}>
+                    <Label title={"Img 4"} style={{ marginRight: '25px', minWidth: '60px' }}>
                       <Select onChange={this.onChangeInputImgSelection} 
-                      id="ImageSelector_2"
-                      value={selectedImageTopics[2]}>
-                        {imageOptions}
-                      </Select>
-                    </Label>
-                    <Label title={"Img 4"}>
-                      <Select onChange={this.onChangeInputImgSelection} 
-                      id="ImageSelector_3"
-                      value={selectedImageTopics[3]}>
+                        id="ImageSelector_3"
+                        value={selectedImageTopics[3]}>
                         {imageOptions}
                       </Select>
                     </Label>
 
-
+                    </div>
 
                     <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -333,7 +356,7 @@ class ImageViewerApp extends Component {
           </div>
       
       </div>
-
+      </div>
 
 
     )
