@@ -81,6 +81,8 @@ class NepiImageViewerApp(object):
     self.base_namespace = nepi_ros.get_base_namespace()
     self.node_name = nepi_ros.get_node_name()
     self.node_namespace = nepi_ros.get_node_namespace()
+    self.data_products_list = self.data_products
+
 
     ##############################  
     # Create Msg Class
