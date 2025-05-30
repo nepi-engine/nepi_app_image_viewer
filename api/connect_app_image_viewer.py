@@ -23,6 +23,8 @@ from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
 from nepi_ros_interfaces.msg import StringArray
 
+from nepi_ros_interfaces.msg import SaveDataRate, SaveDataStatus
+
 from nepi_sdk import nepi_ros
 from nepi_sdk import nepi_utils
 from nepi_sdk import nepi_img
