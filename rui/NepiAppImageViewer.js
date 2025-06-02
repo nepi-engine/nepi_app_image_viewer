@@ -229,6 +229,7 @@ class ImageViewerApp extends Component {
 
                               <ImageViewer
                                 imageTopic={selectedImageTopics[0]}
+                                show_controls={false}
                                 title={selectedImageText[0]}
                                 hideQualitySelector={true}
                                 squareCanvas={true}
@@ -236,6 +237,7 @@ class ImageViewerApp extends Component {
                               {(selectedImageTopics[2] !== 'None')?
                                 <ImageViewer
                                 imageTopic={selectedImageTopics[2]}
+                                show_controls={false}
                                 title={selectedImageText[2]}
                                 hideQualitySelector={true}
                                 squareCanvas={true}
@@ -252,6 +254,7 @@ class ImageViewerApp extends Component {
                               {(selectedImageTopics[1] !== 'None' || selectedImageTopics[3] !== 'None' )?
                                 <ImageViewer
                                   imageTopic={selectedImageTopics[1]}
+                                  show_controls={false}
                                   title={selectedImageText[1]}
                                   hideQualitySelector={true}
                                   squareCanvas={true}
@@ -262,6 +265,7 @@ class ImageViewerApp extends Component {
                               {(selectedImageTopics[3] !== 'None')?
                                 <ImageViewer
                                   imageTopic={selectedImageTopics[3]}
+                                  show_controls={false}
                                   title={selectedImageText[3]}
                                   hideQualitySelector={true}
                                   squareCanvas={true}
