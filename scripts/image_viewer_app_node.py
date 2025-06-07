@@ -33,9 +33,9 @@ import threading
 from std_msgs.msg import UInt8, Empty, String, Bool, Float32, Int32
 from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
-from nepi_ros_interfaces.msg import StringArray
+from nepi_sdk_interfaces.msg import StringArray
 
-from nepi_sdk import nepi_ros
+from nepi_sdk import nepi_sdk
 from nepi_sdk import nepi_utils
 from nepi_sdk import nepi_img
 
@@ -76,11 +76,11 @@ class NepiImageViewerApp(object):
   DEFAULT_NODE_NAME = "app_image_viewer" # Can be overwitten by luanch command
   def __init__(self):
     #### APP NODE INIT SETUP ####
-    nepi_ros.init_node(name= self.DEFAULT_NODE_NAME)
+    nepi_sdk.init_node(name= self.DEFAULT_NODE_NAME)
     self.class_name = type(self).__name__
-    self.base_namespace = nepi_ros.get_base_namespace()
-    self.node_name = nepi_ros.get_node_name()
-    self.node_namespace = nepi_ros.get_node_namespace()
+    self.base_namespace = nepi_sdk.get_base_namespace()
+    self.node_name = nepi_sdk.get_node_name()
+    self.node_namespace = nepi_sdk.get_node_namespace()
     self.data_products_list = self.data_products
 
 
@@ -181,18 +181,18 @@ class NepiImageViewerApp(object):
     self.publish_status()
 
     time.sleep(1)
-    nepi_ros.start_timer_process(0.5, self.statusPublishCb)
+    nepi_sdk.start_timer_process(0.5, self.statusPublishCb)
     # Give publishers time to setup
     time.sleep(1)
 
-    nepi_ros.start_timer_process(self.update_image_subs_interval_sec, self.updateImageSubsThread)
+    nepi_sdk.start_timer_process(self.update_image_subs_interval_sec, self.updateImageSubsThread)
     ## Initiation Complete
     self.msg_if.pub_info("factoryResetCbCb:  Initialization Complete")
 
     #Set up node shutdown
-    nepi_ros.on_shutdown(self.cleanup_actions)
+    nepi_sdk.on_shutdown(self.cleanup_actions)
     # Spin forever (until object is detected)
-    nepi_ros.spin()
+    nepi_sdk.spin()
 
 
 
@@ -242,10 +242,10 @@ class NepiImageViewerApp(object):
     sel_topics = self.node_if.get_param('selected_topics')
     #for i, topic in enumerate(sel_topics):
       #if topic != "None":
-        #if nepi_ros.find_topic(topic) == "":
+        #if nepi_sdk.find_topic(topic) == "":
           #sel_topics[i] = "None"
     status_msg = sel_topics
-    if not nepi_ros.is_shutdown():
+    if not nepi_sdk.is_shutdown():
       self.node_if.publish_pub('status_pub',status_msg)
 
 
@@ -259,7 +259,7 @@ class NepiImageViewerApp(object):
     #self.msg_if.pub_warn("Subs dict keys: " + str(self.img_subs_dict.keys()))
     for i, sel_topic in enumerate(sel_topics):
       if sel_topic != "" and sel_topic != "None" and sel_topic not in self.img_subs_dict.keys():
-        if nepi_ros.check_for_topic(sel_topic):
+        if nepi_sdk.check_for_topic(sel_topic):
           topic_uid = sel_topic.replace('/','')
           exec('self.' + topic_uid + '_img = None')
           exec('self.' + topic_uid + '_timestamp = None')
@@ -268,7 +268,7 @@ class NepiImageViewerApp(object):
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
           data_product = "image" + str(i + 1)
-          img_sub = nepi_ros.create_subscriber(sel_topic, Image, self.imageCb, queue_size = 10, callback_args=data_product)
+          img_sub = nepi_sdk.create_subscriber(sel_topic, Image, self.imageCb, queue_size = 10, callback_args=data_product)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
@@ -286,7 +286,7 @@ class NepiImageViewerApp(object):
   def imageCb(self,img_msg, args):
     data_product = args
     cv2_img = nepi_img.rosimg_to_cv2img(img_msg)
-    timestamp = nepi_ros.sec_from_timestamp(img_msg.header.stamp)
+    timestamp = nepi_sdk.sec_from_timestamp(img_msg.header.stamp)
     self.save_data_if.save(data_product,cv2_img,timestamp = timestamp)
 
 
