@@ -268,7 +268,7 @@ class NepiImageViewerApp(object):
           self.msg_if.pub_info("Subscribing to topic: " + sel_topic)
           self.msg_if.pub_info("with topic_uid: " + topic_uid)
           data_product = "image" + str(i + 1)
-          img_sub = nepi_sdk.create_subscriber(sel_topic, Image, self.imageCb, queue_size = 10, callback_args=data_product)
+          img_sub = nepi_sdk.create_subscriber(sel_topic, Image, self.imageCb, _queue_size = 10, callback_args=data_product)
           self.img_subs_dict[sel_topic] = img_sub
           self.msg_if.pub_info("IMG_VIEW_APP:  Image: " + sel_topic + " registered")
     # Unregister image subscribers if not in selected images list
