@@ -106,7 +106,7 @@ class ImageViewerApp extends Component {
       }
       var statusListener = this.props.ros.setupStatusListener(
             statusNamespace,
-            "nepi_sdk_interfaces/StringArray",
+            "nepi_interfaces/StringArray",
             this.statusListener
           )
       this.setState({ 

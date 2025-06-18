@@ -33,7 +33,7 @@ import threading
 from std_msgs.msg import UInt8, Empty, String, Bool, Float32, Int32
 from sensor_msgs.msg import Image
 from nepi_app_image_viewer.msg import ImageSelection
-from nepi_sdk_interfaces.msg import StringArray
+from nepi_interfaces.msg import StringArray
 
 from nepi_sdk import nepi_sdk
 from nepi_sdk import nepi_utils
