@@ -67,7 +67,7 @@ class NepiImageViewerApp(object):
   data_products = ["image1","image2","image3","image4"]
   img_subs_dict = dict()
 
-
+  selected_topics = ["None","None","None","None"]
   #######################
   ### Node Initialization
 
@@ -109,7 +109,7 @@ class NepiImageViewerApp(object):
     self.PARAMS_DICT = {
         'selected_topics': {
             'namespace': self.node_namespace,
-            'factory_val': ["None","None","None","None"]
+            'factory_val': self.selected_topics
         }
     }
 
@@ -210,8 +210,11 @@ class NepiImageViewerApp(object):
     img_topic = msg.image_topic
     current_sel = self.node_if.get_param('selected_topics')
     current_sel[img_index] = img_topic
-    self.node_if.set_param('selected_topics', current_sel)
+    self.selected_topics = current_sel
     self.publish_status()
+    if self.node_if is not None:
+      self.node_if.set_param('selected_topics', current_sel)
+    
 
 
 
@@ -222,15 +225,21 @@ class NepiImageViewerApp(object):
 
 
   def initCb(self,do_updates = False):
+      if self.node_if is not None:
+        self.selected_topics = self.node_if.get_param('selected_topics')
       if do_updates == True:
-        self.resetCb(do_updates)
+        pass
+      self.publish_status()
 
   def resetCb(self,do_updates = True):
       if do_updates:
-          self.publish_status()
+          pass
+      self.initCb
 
-  def factoryResetCb(self):
-    self.publish_status()
+  def factoryResetCb(self,do_updates = True):
+      if do_updates:
+          pass
+      self.initCb
 
   ###################
   ## Status Publishers
@@ -239,7 +248,7 @@ class NepiImageViewerApp(object):
       self.publish_status()
 
   def publish_status(self):
-    sel_topics = self.node_if.get_param('selected_topics')
+    sel_topics = self.selected_topics
     #for i, topic in enumerate(sel_topics):
       #if topic != "None":
         #if nepi_sdk.find_topic(topic) == "":
@@ -254,7 +263,7 @@ class NepiImageViewerApp(object):
 
   def updateImageSubsThread(self,timer):
     # Subscribe to topic image topics if not subscribed
-    sel_topics = self.node_if.get_param('selected_topics')
+    sel_topics = self.selected_topics
     #self.msg_if.pub_warn("Selected images: " + str(sel_topics))
     #self.msg_if.pub_warn("Subs dict keys: " + str(self.img_subs_dict.keys()))
     for i, sel_topic in enumerate(sel_topics):
