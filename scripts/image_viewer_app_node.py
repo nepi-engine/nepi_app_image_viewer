@@ -60,6 +60,7 @@ class NepiImageViewerApp(object):
 
   FACTORY_SELECTED_TOPICS = ["None","None","None","None"]
 
+  node_if = None
 
   update_image_subs_interval_sec = float(1)/UPDATE_IMAGE_SUBS_RATE_HZ
   update_save_data_check_interval_sec = float(1)/UPDATE_SAVE_DATA_CHECK_RATE_HZ
@@ -230,13 +231,18 @@ class NepiImageViewerApp(object):
       if do_updates == True:
         pass
       self.publish_status()
+      
 
   def resetCb(self,do_updates = True):
+      if self.node_if is not None:
+        self.node_if.reset_params()
       if do_updates:
           pass
       self.initCb
 
   def factoryResetCb(self,do_updates = True):
+      if self.node_if is not None:
+        self.node_if.factory_reset_params()
       if do_updates:
           pass
       self.initCb
@@ -254,7 +260,7 @@ class NepiImageViewerApp(object):
         #if nepi_sdk.find_topic(topic) == "":
           #sel_topics[i] = "None"
     status_msg = sel_topics
-    if not nepi_sdk.is_shutdown():
+    if self.node_if is not None:
       self.node_if.publish_pub('status_pub',status_msg)
 
 
