@@ -69,6 +69,9 @@ class NepiImageViewerApp(object):
   img_subs_dict = dict()
 
   selected_topics = ["None","None","None","None"]
+
+  selected_topics = self.selected_topics
+    
   #######################
   ### Node Initialization
 
@@ -223,29 +226,25 @@ class NepiImageViewerApp(object):
   #######################
   ### Config Functions
 
-
-
   def initCb(self,do_updates = False):
-      if self.node_if is not None:
-        self.selected_topics = self.node_if.get_param('selected_topics')
-      if do_updates == True:
-        pass
-      self.publish_status()
-      
+    if self.node_if is not None:
+
+      pass
+
+    if do_updates == True:
+      pass
+    self.publish_status()
 
   def resetCb(self,do_updates = True):
-      if self.node_if is not None:
-        self.node_if.reset_params()
-      if do_updates:
-          pass
-      self.initCb
+    if do_updates:
+        pass
+    self.initCb
 
   def factoryResetCb(self,do_updates = True):
-      if self.node_if is not None:
-        self.node_if.factory_reset_params()
-      if do_updates:
-          pass
-      self.initCb
+    if do_updates:
+        pass
+    self.initCb
+
 
   ###################
   ## Status Publishers
