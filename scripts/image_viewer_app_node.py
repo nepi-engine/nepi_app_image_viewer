@@ -188,7 +188,7 @@ class NepiImageViewerApp(object):
 
     nepi_sdk.start_timer_process(self.update_image_subs_interval_sec, self.updateImageSubsThread)
     ## Initiation Complete
-    self.msg_if.pub_info("factoryResetCbCb:  Initialization Complete")
+    self.msg_if.pub_info("Initialization Complete")
 
     #Set up node shutdown
     nepi_sdk.on_shutdown(self.cleanup_actions)
