@@ -70,7 +70,7 @@ class NepiImageViewerApp(object):
 
   selected_topics = ["None","None","None","None"]
 
-  selected_topics = self.selected_topics
+  #selected_topics = selected_topics
     
   #######################
   ### Node Initialization
