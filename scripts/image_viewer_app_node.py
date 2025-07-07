@@ -212,7 +212,7 @@ class NepiImageViewerApp(object):
     self.msg_if.pub_info(str(msg))
     img_index = msg.image_index
     img_topic = msg.image_topic
-    current_sel = self.node_if.get_param('selected_topics')
+    current_sel = self.selected_topics
     current_sel[img_index] = img_topic
     self.selected_topics = current_sel
     self.publish_status()
@@ -228,7 +228,7 @@ class NepiImageViewerApp(object):
 
   def initCb(self,do_updates = False):
     if self.node_if is not None:
-
+      self.selected_topics = self.node_if.get_param('selected_topics')
       pass
 
     if do_updates == True:
@@ -238,12 +238,12 @@ class NepiImageViewerApp(object):
   def resetCb(self,do_updates = True):
     if do_updates:
         pass
-    self.initCb
+    self.initCb(do_updates = do_updates)
 
   def factoryResetCb(self,do_updates = True):
     if do_updates:
         pass
-    self.initCb
+    self.initCb(do_updates = do_updates)
 
 
   ###################
@@ -253,12 +253,7 @@ class NepiImageViewerApp(object):
       self.publish_status()
 
   def publish_status(self):
-    sel_topics = self.selected_topics
-    #for i, topic in enumerate(sel_topics):
-      #if topic != "None":
-        #if nepi_sdk.find_topic(topic) == "":
-          #sel_topics[i] = "None"
-    status_msg = sel_topics
+    status_msg = self.selected_topics
     if self.node_if is not None:
       self.node_if.publish_pub('status_pub',status_msg)
 
