@@ -229,7 +229,6 @@ class NepiImageViewerApp(object):
   def initCb(self,do_updates = False):
     if self.node_if is not None:
       self.selected_topics = self.node_if.get_param('selected_topics')
-      pass
 
     if do_updates == True:
       pass
